@@ -28,6 +28,8 @@
  
 package com.jogamp.common.os;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
@@ -165,9 +167,10 @@ public class Platform extends PlatformPropsImpl {
     static {
         PlatformPropsImpl.initSingleton(); // just documenting the order of static initialization
         
-        USE_TEMP_JAR_CACHE = (OS_TYPE != OSType.ANDROID) && isRunningFromJarURL() &&
-                             Debug.getBooleanProperty(useTempJarCachePropName, true, true);
+        USE_TEMP_JAR_CACHE = true;//(OS_TYPE != OSType.ANDROID) && isRunningFromJarURL() &&
+                             //Debug.getBooleanProperty(useTempJarCachePropName, true, true);
                 
+        
         loadGlueGenRTImpl();
         
         JVMUtil.initSingleton(); // requires gluegen-rt, one-time init.
@@ -188,6 +191,12 @@ public class Platform extends PlatformPropsImpl {
         machineDescription = md;
         is32Bit = machineDescription.is32Bit();
         
+		try {
+			TempJarCache.addNativeLibs(null, JarUtil.getJarFileURL(Platform.class.getName(), ClassLoader.getSystemClassLoader()), ClassLoader.getSystemClassLoader());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+        
         {
             final ClassLoader cl = Platform.class.getClassLoader();
             AWT_AVAILABLE = AccessController.doPrivileged(new PrivilegedAction<Boolean>() {
@@ -204,6 +213,7 @@ public class Platform extends PlatformPropsImpl {
                 }
               }).booleanValue();
         }
+
     }
 
     private Platform() {}
@@ -228,10 +238,14 @@ public class Platform extends PlatformPropsImpl {
               if(USE_TEMP_JAR_CACHE && TempJarCache.initSingleton()) {
                   final String nativeJarName = libBaseName+"-natives-"+os_and_arch+".jar";
                   try {
-                    final URL jarUrlRoot = JarUtil.getURLDirname(
-                                        JarUtil.getJarSubURL(Platform.class.getName(), cl) );
-                    final URL nativeJarURL = JarUtil.getJarFileURL(jarUrlRoot, nativeJarName);
+                    //final URL jarUrlRoot = JarUtil.getURLDirname(
+                                       // JarUtil.getJarSubURL(Platform.class.getName(), cl) );
+        			//final URL nativeJarURL = JarUtil.getJarFileURL(jarUrlRoot, nativeJarName);
+                	  
+          			//final URL nativeJarURL = JarUtil.getJarFileURL(new URL("file:/c:/dev/"),"natives.jar");
+          			final URL nativeJarURL = JarUtil.getJarFileURL(Platform.class.getName(), cl);
                     TempJarCache.bootstrapNativeLib(Platform.class, libBaseName, nativeJarURL, cl);
+
                   } catch (Exception e0) {
                     // IllegalArgumentException, IOException
                     System.err.println("Catched: "+e0.getMessage());

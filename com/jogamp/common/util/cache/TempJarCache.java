@@ -48,6 +48,7 @@ import java.util.jar.JarFile;
 import jogamp.common.Debug;
 
 import com.jogamp.common.os.NativeLibrary;
+import com.jogamp.common.os.Platform;
 import com.jogamp.common.util.IOUtil;
 import com.jogamp.common.util.JarUtil;
 import com.jogamp.common.util.SecurityUtil;
@@ -202,8 +203,9 @@ public class TempJarCache {
             if(DEBUG) {
                 System.err.println("TempJarCache: addNativeLibs: "+jarURL+": nativeJar "+jarFile.getName());
             }
-            validateCertificates(certClass, jarFile);
-            JarUtil.extract(tmpFileCache.getTempDir(), nativeLibMap, jarFile, 
+            //validateCertificates(certClass, jarFile);
+            File s = tmpFileCache.getTempDir();
+            JarUtil.extract(s, nativeLibMap, jarFile, 
                             true, false, false); 
             nativeLibJars.add(jarURL);
         }
@@ -376,9 +378,10 @@ public class TempJarCache {
     
                 if( entryName.indexOf('/') == -1 &&
                     entryName.indexOf(File.separatorChar) == -1 &&
-                    entryName.indexOf(libBaseName) >= 0 ) 
+                    entryName.indexOf(libBaseName) >= 0 &&
+                    entryName.indexOf(Platform.os_and_arch) >= 0) 
                 {
-                    final File destFile = new File(tmpFileCache.getTempDir(), entryName);
+                    final File destFile = new File(tmpFileCache.getTempDir(), entryName.replace("-" + Platform.os_and_arch, ""));
                     final InputStream in = new BufferedInputStream(jarFile.getInputStream(entry));
                     final OutputStream out = new BufferedOutputStream(new FileOutputStream(destFile));
                     int numBytes = 0; 
@@ -393,7 +396,7 @@ public class TempJarCache {
                     } finally { in.close(); out.close(); }
                     if (numBytes>0) {
                         nativeLibMap.put(libBaseName, destFile.getAbsolutePath());
-                        nativeLibJars.add(jarURL);
+                        //nativeLibJars.add(jarURL);
                     }
                 }
             }

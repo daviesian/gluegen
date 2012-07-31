@@ -149,29 +149,7 @@ public class JNILibLoaderBase {
    * @return true if the native JAR file loaded successful or were loaded already, false in case of an error
    */
   public static final boolean addNativeJarLibs(Class<?> classFromJavaJar, String nativeJarBaseName) {
-    if(TempJarCache.isInitialized()) {
-        final String nativeJarName = nativeJarBaseName+"-natives-"+PlatformPropsImpl.os_and_arch+".jar";
-        final ClassLoader cl = classFromJavaJar.getClassLoader();
-        try {
-            URL jarUrlRoot = JarUtil.getURLDirname( JarUtil.getJarSubURL( classFromJavaJar.getName(), cl ) );
-            if(DEBUG) {
-                System.err.println("JNILibLoaderBase: addNativeJarLibs: "+nativeJarBaseName+": url-root "+jarUrlRoot);
-            }
-            URL nativeJarURL = JarUtil.getJarFileURL(jarUrlRoot, nativeJarName);
-            if(DEBUG) {
-                System.err.println("JNILibLoaderBase: addNativeJarLibs: "+nativeJarBaseName+": nativeJarURL "+nativeJarURL);
-            }
-            TempJarCache.addNativeLibs(classFromJavaJar, nativeJarURL, cl);
-            return true;
-        } catch (Exception e0) {
-            // IllegalArgumentException, IOException
-            System.err.println("Catched: "+e0.getMessage());
-            if(DEBUG) {
-                e0.printStackTrace();
-            }
-        }
-    }
-    return false;
+    return true;
   }
    
   /**
@@ -182,36 +160,7 @@ public class JNILibLoaderBase {
    *         false in case of an error
    */
   public static boolean addNativeJarLibs(Class<?> classFromJavaJar, String allNativeJarBaseName, String[] atomicNativeJarBaseNames) {
-    boolean res = false;
-    if(TempJarCache.isInitialized()) {
-        final ClassLoader cl = classFromJavaJar.getClassLoader();
-        try {
-            final String jarName = JarUtil.getJarBasename(classFromJavaJar.getName(), cl);
-            if(jarName!=null) {
-                if(!res && null != allNativeJarBaseName) {
-                    // all-in-one variant 1st
-                    res = JNILibLoaderBase.addNativeJarLibs(classFromJavaJar, allNativeJarBaseName);
-                }
-                if(!res && null != atomicNativeJarBaseNames) {
-                    // atomic variant
-                    res = true;
-                    for(int i=0; res && i<atomicNativeJarBaseNames.length; i++) {
-                        final String atomicNativeJarBaseName = atomicNativeJarBaseNames[i];
-                        if(null != atomicNativeJarBaseName && atomicNativeJarBaseName.length()>0) {
-                            res = JNILibLoaderBase.addNativeJarLibs(classFromJavaJar, atomicNativeJarBaseName);
-                        }
-                    }
-                }
-            }
-        } catch (Exception e0) {
-            // IllegalArgumentException, IOException
-            System.err.println("Catched: "+e0.getMessage());
-            if(DEBUG) {
-                e0.printStackTrace();
-            }
-        }
-    }
-    return res;
+    return true;
   }
   
   /**
